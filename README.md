@@ -1,5 +1,7 @@
 # 循据 ProofPath
 
+[![CI](https://github.com/yyl66624/-ProofPath/actions/workflows/ci.yml/badge.svg)](https://github.com/yyl66624/-ProofPath/actions/workflows/ci.yml)
+
 **团队协作入口：[团队项目 0 号文档](00-项目文档/00-团队项目0号文档.md) ｜ [五人分工与任务清单](00-项目文档/01-五人分工与任务清单.md)**
 
 项目范围、成员分工、开发协作、测试验收与 Demo 交付方案统一见此文档。
