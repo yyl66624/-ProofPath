@@ -1,0 +1,15 @@
+# 换行符策略：同一份文件在所有操作系统上保持同一份字节内容。
+# 没有这一行时，Windows 检出（core.autocrlf=true）会重写每个 blob，导致跨平台 diff
+# 出现大量无意义差异，也让人误以为"所有文件都被改过"。
+# 依据：00-项目文档/01-五人分工与任务清单.md 第十节。
+* text=auto eol=lf
+
+# 二进制素材：一律不做行尾转换。
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.pdf binary
+*.docx binary
+*.pptx binary
+*.xlsx binary

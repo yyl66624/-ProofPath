@@ -1,0 +1,33 @@
+# 代码所有权
+# 依据：00-项目文档/01-五人分工与任务清单.md 第十节"文件所有权"。
+#
+# 角色代号：A 仓库管理员/集成，B 产品与演示，C 后端与模型，D 前端，E 测试与质量。
+# 目前仓库只有一名协作者，因此全部路径暂由 @yyl66624 兜底审查。
+# 其余成员加入为协作者后：把下方对应行的用户名换成实际负责人；
+# 没有协作者认领的路径保持 @yyl66624，不要留空，否则该路径将无人审查。
+#
+# 注意：CODEOWNERS 只支持整行注释，不要写行尾注释，也不要写不存在的用户名。
+
+# 默认兜底：A（仓库管理员）
+*                               @yyl66624
+
+# 共享文件：他人改动需 A 审核
+/README.md                      @yyl66624
+/pyproject.toml                 @yyl66624
+/.gitattributes                 @yyl66624
+/.github/                       @yyl66624
+
+# 项目规则类文档：项目负责人与 A
+/00-项目文档/                   @yyl66624
+
+# 接口契约与决策记录：C 起草，A 终审
+/docs/decisions.md              @yyl66624
+/docs/api-contract.md           @yyl66624
+
+# 信任边界：C 负责，改动必须同时通知 E
+/src/proofpath/verifier.py      @yyl66624
+/src/proofpath/actions.py       @yyl66624
+/src/proofpath/audit.py         @yyl66624
+
+# 测试体系：E
+/tests/                         @yyl66624
