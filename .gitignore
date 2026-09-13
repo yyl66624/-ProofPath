@@ -26,3 +26,12 @@ coverage.xml
 # Generated runtime records and operating system files
 run.jsonl
 .DS_Store
+
+# Frontend (Node/pnpm) artifacts
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/tsconfig.tsbuildinfo
+frontend/.tsbuild/
+frontend/.cache/
+frontend/coverage/

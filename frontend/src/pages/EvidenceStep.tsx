@@ -226,7 +226,7 @@ export function EvidenceStep() {
                 <p className="mt-2 text-xs text-red-600 flex items-start gap-1.5">
                   <MapPinOff className="w-3 h-3 shrink-0 mt-0.5" aria-hidden="true" />
                   {selected.status === "NOT_FOUND" &&
-                    "此引用未能在原文指定页面找到，对应结论已降级为"原文未明确"。"}
+                    "此引用未能在原文指定页面找到，对应结论已降级为“原文未明确”。"}
                   {selected.status === "TOO_SHORT" &&
                     "此引用过短（不足以作为可靠证据），对应结论已降级。"}
                   {selected.status === "BAD_PAGE" &&
@@ -491,7 +491,7 @@ function renderHighlightedText(
   return (
     <>
       {before}
-      <span ref={ref} className={`${highlightClass} px-0.5 rounded`}>
+      <span ref={ref as React.Ref<HTMLSpanElement>} className={`${highlightClass} px-0.5 rounded`}>
         {match}
       </span>
       {after}

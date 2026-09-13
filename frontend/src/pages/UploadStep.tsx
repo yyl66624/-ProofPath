@@ -7,7 +7,7 @@
 import { useState, useRef, useCallback } from "react";
 import { FileUp, FlaskConical, FileText, X } from "lucide-react";
 import { useApp } from "@/store/AppContext";
-import { uploadDocument, getProfileFields, isDemoMode, setDemoMode } from "@/api/client";
+import { uploadDocument, getProfileFields, setDemoMode } from "@/api/client";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ErrorAlert } from "@/components/ErrorAlert";
 import { MOCK_DOCUMENT, MOCK_QUESTION, MOCK_PROFILE_FIELDS } from "@/mock/data";

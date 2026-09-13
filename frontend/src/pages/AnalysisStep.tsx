@@ -20,7 +20,7 @@ import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ErrorAlert } from "@/components/ErrorAlert";
 import { StatusBadge } from "@/components/StatusBadge";
 import { CitationBadge } from "@/components/CitationBadge";
-import type { AnalysisResult, ConditionVerdict, ApiError } from "@/types";
+import type { ConditionVerdict, ApiError } from "@/types";
 
 type PageState = "loading" | "ready" | "error" | "retrying";
 

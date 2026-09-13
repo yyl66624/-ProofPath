@@ -87,7 +87,7 @@ export const MOCK_VERDICTS: ConditionVerdict[] = [
     condition: "补贴标准：硕士研究生每月1500元，且首次申请可追补3个月",
     status: "UNKNOWN",
     rationale:
-      "按学历分档，硕士对应每月1500元，并可追补此前3个月。\n[证据核验未通过] 引用"首次申请的人员可以追补此前3个月的补贴"未在原文中找到",
+      "按学历分档，硕士对应每月1500元，并可追补此前3个月。\n[证据核验未通过] 引用“首次申请的人员可以追补此前3个月的补贴”未在原文中找到",
     citations: [
       {
         citation: { page: 2, quote: "硕士研究生或副高级职称,每月1500元" },
@@ -106,7 +106,7 @@ export const MOCK_VERDICTS: ConditionVerdict[] = [
     condition: "劳动合同期限不少于1年",
     status: "UNKNOWN",
     rationale:
-      "你与本市用人单位已建立劳动关系。\n[证据核验未通过] 引用"合同"过短，不足为证",
+      "你与本市用人单位已建立劳动关系。\n[证据核验未通过] 引用“合同”过短，不足为证",
     citations: [
       {
         citation: { page: 1, quote: "合同" },
