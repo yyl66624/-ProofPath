@@ -213,6 +213,8 @@
 
 **已验证（2026年9月13日，真实密钥，共 3 次调用）**：用仓库现有的 `load_document` → `Bm25Index` → `build_context` → `_parse_payload` → `verify_report` 全链路，对 `examples/policy.txt` 跑真实调用，结果如下。
 
+完整实验记录（探针数据、逐条判定、成本、复现方式与未覆盖项）见 [`docs/model-verification.md`](model-verification.md)。
+
 | 配置 | 耗时 | 输出 token | 条件数 | 引用核验 | 观察 |
 |---|---|---|---|---|---|
 | flash，思考默认，`max_tokens=3000` | 14s | 3000（用满） | — | — | **两次都返回空内容**，`finish_reason=length`：思考 token 吃光了预算 |
