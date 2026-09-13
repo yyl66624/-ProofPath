@@ -251,3 +251,43 @@
 **配套措施**：`.gitignore` 已忽略 `.env` 与 `.env.*`；`.env.example` 只含变量名；CI 增加"疑似密钥扫描"步骤（扫描 `src`、`tests`、`docs`、`examples` 中形如 `sk-` 加 20 位以上字符的串）。
 
 **未决**：密钥由谁统一申请与计费、成员是否各自申请，需项目负责人确认；在确认前，A 不代为申请，也不会持有成员密钥。
+
+---
+
+## D-014 全量分支合并与"完整的项目"联调（2026年9月13日）
+
+**背景**：项目负责人要求"审核分支、测试后推到 main、到一个完整的项目"。当时远端共有 9 条未合并分支（5 条 docs/chore 已通过 PR #18–#20 整合进 main，4 条带净改动），main 落后 origin 1 个 commit。
+
+**执行范围**：9 条远端分支按风险从低到高合并到本地 main：
+1. `docs/B-P02-P03-P12` — 6 个新文档（acceptance-set、attribution、demo、product、research、TODO-B），无冲突
+2. `test/E-quality-P09`（孤儿分支）— 新增 `docs/acceptance-criteria.md`；8 个 add/add 冲突文件全部 `--ours`（main 已含更新版）
+3. `feat/d-frontend-p04-p07-p10`（孤儿分支）— 完整 `frontend/` React+TS+Vite 项目 + 2 个设计文档；6 个冲突文件全部 `--ours`
+4. `feat/P05-backend-foundation` — DeepSeek reasoner 重写 + FastAPI 服务层 + Pydantic 契约 + 4 个新测试模块；`docs/api-contract.md` 冲突选 `--theirs`（C 角色权威）
+5. `docs/G0-ci-activation`、`docs/G0-protection-verification`、`docs/G2-deepseek-live-verification`、`chore/A5-ci-workflow`、`docs/G2-stack-credentials` — 空合（内容已通过 PR #18–#20 整合到 main），全部用 `--no-ff` 合并留作"已审核"标记；冲突全 `--ours`
+
+**P05 引入的回归修复**（独立 commit `7239a24`）：
+- `tests/test_e_cli_coverage.py` — mock 目标从 `ClaudeReasoner` 改为 `DeepSeekReasoner`
+- `tests/test_e_reasoner_coverage.py` — 整体 skip（Anthropic-only 接口测试，已被新 `test_reasoner.py` 替代）
+- `tests/test_e_parsers_coverage.py` — latin-1 fallback 测试 skip（P05 改为严格 UTF-8 是有意识决策，符合 T06 "明确失败原因"）
+
+**前端构建错误修复**（独立 commit `fb3cb47`）：
+- 3 处 ASCII 双引号嵌套导致 tsc 失败（`EvidenceStep.tsx:229`、`data.ts:90/98/109/112`），改用中文全角引号 `""`（与后端 `render.py` 同一字符）
+- tsc 3 个 warning：移除未使用 import，给 `ref` 加 `React.Ref<HTMLSpanElement>` 类型断言
+- 新增 `frontend/pnpm-workspace.yaml` 用 `allowBuilds: esbuild: true` 触发 esbuild postinstall（不再需要 `node-linker=hoisted` 绕过）
+- `.gitignore` 增加 `frontend/node_modules/`、`frontend/dist/`、`frontend/.vite/`、`frontend/tsconfig.tsbuildinfo`、`frontend/coverage/`
+
+**真实端到端验证**：
+- 测试：249 passed, 2 skipped, 0 failed
+- 覆盖率：**94%**（1413/1493 行；100% × 10 个模块，97–98% × 3，96% × 1，89–91% × 2，81% × 1）
+- CLI：parse、search、demo、plan、audit、doctor 全部正常；**demo 仍展示 2 条结论被证据拦截降级**（README 核心承诺）
+- 审计链：`proofpath audit` 校验通过（2 条记录带哈希链）
+- 后端服务：uvicorn 启动 1 秒内就绪；`/docs` 200；`/openapi.json` 列出 5 个端点
+- API 端到端：上传 → 创建分析（202）→ 轮询 → 失败（`MODEL_UNAVAILABLE`，无真实凭证时是预期）
+- 前端构建：`tsc -b` 0 错误；`vite build` 678ms 输出 193.56 kB JS / 21.79 kB CSS
+
+**关键决策**：
+- 5 条空合 docs/chore 分支仍 `--no-ff` 合并（commit `d71a908`、`93f38a8`、`ab42596`、`ea70358`、`c38801e`）作为审核痕迹，无内容影响
+- 管理员直推 main 触发 1 条 `Bypassed rule violations` 记录，符合 D-004 实测
+
+**推送**：本地 main 领先 origin 11 个 commit，待推送。
+
