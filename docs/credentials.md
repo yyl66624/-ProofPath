@@ -73,7 +73,10 @@ client = OpenAI(api_key=key, base_url="https://api.deepseek.com")
 client.models.list()
 ```
 
-**已验证的部分**：2026年9月13日用无效密钥实测，`https://api.deepseek.com` 上的 `/models` 与 `/chat/completions` 均正常响应，返回 `401 AuthenticationError`（OpenAI 风格错误体）。这证明入口地址与 SDK 接线正确，**不代表模型调用已验证**——真实调用需要有效密钥，尚未执行。
+**已完成的验证**：
+
+1. 用无效密钥实测 `https://api.deepseek.com` 上的 `/models` 与 `/chat/completions`，均返回 `401 AuthenticationError`（OpenAI 风格错误体），证明入口地址与 SDK 接线正确。
+2. 2026年9月13日用有效密钥完成真实调用（3 次，含一次端到端核验链路），结果与实现要求见 `docs/decisions.md` D-012。密钥由项目负责人提供，**未写入仓库、未写入任何文件**。
 
 ---
 
@@ -93,6 +96,8 @@ client.models.list()
 ## 六 轮换与泄露处置
 
 **轮换**：每 30 天，或成员离开、密钥疑似外泄时立即更换。吊销在 DeepSeek 平台执行，不需要改动代码。
+
+**只要密钥出现在聊天记录、群聊、截图、录屏或任何公开渠道，就按已泄露处理并立即轮换**——不要因为"只是发给同事"而放过。
 
 **发现泄露时按顺序做五件事**：
 
