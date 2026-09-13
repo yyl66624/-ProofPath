@@ -1,0 +1,83 @@
+# 依据：00-项目文档/00-团队项目0号文档.md 5.2（合并前完成约定检查）、9.2（分层验证）；
+# 00-项目文档/01-五人分工与任务清单.md A-5；docs/decisions.md D-006。
+#
+# 三个作业名保持稳定，供分支保护的"必需状态检查"引用：
+#   pytest-ubuntu / pytest-windows / pytest-python-floor
+# 覆盖率只用于发现测试空白，不设统一百分比门槛（0 号文件 9.4）。
+# 工作流不接触真实密钥：模型调用只在显式配置 secret 时可用。
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pytest-ubuntu:
+    name: pytest-ubuntu
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - name: 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev,server]"
+      - name: 检查是否误提交密钥
+        run: |
+          if git grep -nEI 'sk-[A-Za-z0-9_-]{20,}' -- src tests docs examples; then
+            echo "::error::疑似密钥被提交进仓库，请吊销并按 docs/credentials.md 处置"
+            exit 1
+          fi
+          echo "未发现疑似密钥"
+      - name: 运行测试并统计覆盖率
+        run: python -m pytest -q --cov --cov-report=term-missing
+
+  pytest-windows:
+    name: pytest-windows
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - name: 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev,server]"
+      - name: 运行测试
+        run: python -m pytest -q
+
+  pytest-python-floor:
+    name: pytest-python-floor
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - name: 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev,server]"
+      - name: 运行测试（验证 requires-python 下限）
+        run: python -m pytest -q
