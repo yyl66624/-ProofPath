@@ -388,11 +388,18 @@ def _env_number(name: str, fallback: int | float, converter: Any) -> int | float
 
 def create_app(
     *,
-    reasoner_factory: Callable[[], Any] = DeepSeekReasoner,
+    reasoner_factory: Callable[[], Any] | None = None,
     max_upload_bytes: int | None = None,
     analyze_timeout_seconds: float | None = None,
 ) -> FastAPI:
-    """Create an isolated service instance with process-local state."""
+    """Create an isolated service instance with process-local state.
+
+    ``reasoner_factory`` defaults to a credential-aware selector: if
+    ``DEEPSEEK_API_KEY`` is set in the environment, ``DeepSeekReasoner`` is
+    used; otherwise ``ScriptedReasoner`` (from ``proofpath.demo``) returns the
+    canned demo report so the service is usable end-to-end without a key. Pass
+    an explicit factory to override — used by tests.
+    """
     upload_limit = int(
         max_upload_bytes
         if max_upload_bytes is not None
@@ -411,6 +418,17 @@ def create_app(
     )
     if upload_limit <= 0 or analysis_timeout <= 0:
         raise ValueError("service limits must be positive")
+
+    if reasoner_factory is None:
+        # Demo mode: fall back to the canned reasoner so the service works
+        # without DEEPSEEK_API_KEY. The verifier still runs over the canned
+        # report, so the trust-boundary evidence check is exercised.
+        if os.environ.get("DEEPSEEK_API_KEY"):
+            reasoner_factory = DeepSeekReasoner
+        else:
+            from .demo import ScriptedReasoner
+
+            reasoner_factory = ScriptedReasoner
 
     store = _InMemoryStore()
 

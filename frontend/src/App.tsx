@@ -10,6 +10,7 @@ import { AnalysisStep } from "@/pages/AnalysisStep";
 import { EvidenceStep } from "@/pages/EvidenceStep";
 import type { WizardStep } from "@/types";
 import { FileSearch } from "lucide-react";
+import { setDemoMode } from "@/api/client";
 
 const STEP_COMPONENTS: Record<WizardStep, React.FC> = {
   upload: UploadStep,
@@ -19,8 +20,13 @@ const STEP_COMPONENTS: Record<WizardStep, React.FC> = {
 };
 
 export default function App() {
-  const { state, goToStep } = useApp();
+  const { state, goToStep, dispatch } = useApp();
   const StepPage = STEP_COMPONENTS[state.currentStep];
+
+  const toggleMode = (enabled: boolean) => {
+    setDemoMode(enabled);
+    dispatch({ type: "SET_DEMO_MODE", enabled });
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -33,12 +39,38 @@ export default function App() {
               循据 <span className="text-brand-600">ProofPath</span>
             </h1>
           </div>
-          <div className="flex items-center gap-4">
-            {state.demoMode && (
-              <span className="text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded-full border border-amber-200">
-                演示模式
-              </span>
-            )}
+          <div className="flex items-center gap-3">
+            {/* 模式切换 */}
+            <div
+              role="group"
+              aria-label="数据源切换"
+              className="inline-flex rounded-full border border-gray-200 bg-gray-50 p-0.5 text-xs"
+            >
+              <button
+                type="button"
+                onClick={() => toggleMode(true)}
+                aria-pressed={state.demoMode}
+                className={`px-3 py-1 rounded-full transition-colors ${
+                  state.demoMode
+                    ? "bg-amber-500 text-white shadow-sm"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                演示样例
+              </button>
+              <button
+                type="button"
+                onClick={() => toggleMode(false)}
+                aria-pressed={!state.demoMode}
+                className={`px-3 py-1 rounded-full transition-colors ${
+                  !state.demoMode
+                    ? "bg-brand-600 text-white shadow-sm"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                真实接口
+              </button>
+            </div>
             <span className="text-xs text-gray-400">v0.1.0</span>
           </div>
         </div>

@@ -44,7 +44,15 @@ interface AppState {
 
 const initialState: AppState = {
   currentStep: "upload",
-  demoMode: true,
+  demoMode: (() => {
+    try {
+      const stored = localStorage.getItem("proofpath.demoMode");
+      if (stored !== null) return stored === "true";
+    } catch {
+      // localStorage 不可用（隐私模式/SSR）时回退到默认
+    }
+    return true;
+  })(),
   document: null,
   question: "",
   profileFields: [],
@@ -78,6 +86,11 @@ function appReducer(state: AppState, action: AppAction): AppState {
       return { ...state, currentStep: action.step, error: null };
 
     case "SET_DEMO_MODE":
+      try {
+        localStorage.setItem("proofpath.demoMode", String(action.enabled));
+      } catch {
+        // localStorage 不可用时静默忽略，状态仍生效
+      }
       return { ...state, demoMode: action.enabled };
 
     case "SET_DOCUMENT":
