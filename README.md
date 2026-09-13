@@ -1,6 +1,9 @@
 # 循据 ProofPath
 
 [![CI](https://github.com/yyl66624/-ProofPath/actions/workflows/ci.yml/badge.svg)](https://github.com/yyl66624/-ProofPath/actions/workflows/ci.yml)
+[![Pages](https://github.com/yyl66624/-ProofPath/actions/workflows/pages.yml/badge.svg)](https://github.com/yyl66624/-ProofPath/actions/workflows/pages.yml)
+
+**🌐 公网 Demo：<https://yyl66624.github.io/-ProofPath/>** — 浏览器打开即可体验四步向导（默认进 demo 模式，无需后端、无需凭证）
 
 **团队协作入口：[团队项目 0 号文档](00-项目文档/00-团队项目0号文档.md) ｜ [五人分工与任务清单](00-项目文档/01-五人分工与任务清单.md)**
 
