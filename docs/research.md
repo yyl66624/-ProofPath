@@ -38,7 +38,7 @@
 
 1. 表格逐条填写，每条附来源 URL + 查阅日期 + 首屏截图路径。
 2. 若评分维度包含"未在暂用假设内"的项（如实时语音、多网站办理、Agent 独立执行），触发 0 号文件 §3.3 的削减顺序调整。
-3. 若开源复用限制与现有依赖（anthropic、pypdf 及可选 docling / browser-use）冲突，通知 A 走 D-00x 决策记录。
+3. 若开源复用限制与现有依赖（`anthropic`、`openai`、`pypdf` 及可选 `docling` / `browser-use`）冲突，通知 A 走 D-00x 决策记录。当前模型链路正从 Anthropic Claude 迁移到 DeepSeek（走 `openai` SDK 的 OpenAI 兼容格式），详见 [`docs/decisions.md`](decisions.md) D-012 与 [`docs/model-verification.md`](model-verification.md)。
 
 ---
 
@@ -121,7 +121,7 @@
 
 ### 3.3 ProofPath 目前可以宣称的差异（有实测证据）
 
-以下三点在 2026年9月13日的运行基线中已验证（引 `docs/baseline.md` §2.3）：
+上述三类替代方案与 ProofPath 的**根本差别是"信任边界"的位置**：手工办理没有算法输出所以谈不上信任边界；通用大模型问答的信任边界在用户脑子里（用户自己判断答案对不对）；ProofPath 把信任边界搬到代码里——`src/proofpath/verifier.py` 的 `verify_report` 是**唯一**信任边界（详见 [`docs/product.md`](product.md) §二·五 与 `docs/decisions.md` D-012 §四）。这条边界的三个具体表现，2026年9月13日的运行基线里都已验证（引 `docs/baseline.md` §2.3）：
 
 1. **一条结论里任何一个引用无法定位，整条降级。** 复合结论（"1500元 且 可追补3个月"）里的编造部分会被拦下。
 2. **过短的引用（"合同"两字）不算证据。** 结论被降级为"原文未明确"，而非表面显示"已核验"。
@@ -131,11 +131,11 @@
 
 以下声明**没有实测证据**，本轮不进入演示文案：
 
-- "准确率高于 XX%"——没有对照评测。
+- "准确率高于 XX%"——没有对照评测（20 例质量评估留给 P09；见 `docs/model-verification.md` §七.1）。
 - "比手工节省 XX 分钟"——没有对照任务。
 - "获奖概率"——不在本项目应发布的信息范围（0 号文件 §3.4）。
-- "实时调用"——`proofpath check` 从未跑通过（引 `docs/baseline.md` §四.1）。
-- "跨平台可用"——仅在 Windows + Python 3.13 验证。
+- "实时调用稳定可用"——DeepSeek 接线已在脚本级验证 3 次（`docs/model-verification.md`），但**服务级、20 例、并发**均未验证，不作稳定性承诺。
+- "跨平台可用"——本地在 Windows + Python 3.11 与 3.13 各验证过一次；Linux 由 CI 覆盖，首次结果参见 `docs/decisions.md` D-006。
 
 ### 3.5 补齐路径
 

@@ -229,11 +229,14 @@
 
 ### AC-15 · T07 · 未设置 API key 时执行 check
 
-**输入**：清空 `ANTHROPIC_API_KEY` 后执行 `proofpath check examples/policy.txt -q "……"`
+**输入**：清空当前模型链路使用的密钥环境变量后执行 `proofpath check examples/policy.txt -q "……"`。
 
-**期望**：`ReasonerUnavailableError`，用户可读错误信息；不消耗任何调用；退出码 1。
+- **当前**（`reasoner.py` 仍走 `anthropic` SDK）：清空 `ANTHROPIC_API_KEY`
+- **P06 完成后**（切到 DeepSeek，见 `docs/decisions.md` D-012 与 `docs/model-verification.md`）：清空 `DEEPSEEK_API_KEY`
 
-**执行方式**：`$env:ANTHROPIC_API_KEY = ''`；已由 `tests/test_reasoner.py` 覆盖类似路径。
+**期望**：`ReasonerUnavailableError`，用户可读错误信息；不消耗任何调用；退出码 1。**换模型不放松这条判定**——错误分类由 `reasoner.errors` 定义，不因供应商切换而变化；`verify_report` 仍是唯一信任边界（见 [`docs/product.md`](product.md) §二·五）。
+
+**执行方式**：`$env:ANTHROPIC_API_KEY = ''`（或 `$env:DEEPSEEK_API_KEY = ''`，视 P06 迁移状态）；已由 `tests/test_reasoner.py` 覆盖类似路径，迁移后 C 更新对应用例，E 复验编号。
 
 ---
 

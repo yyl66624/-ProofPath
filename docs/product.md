@@ -20,6 +20,17 @@
 
 **成功判据**：用户在 3 分钟内能从"我不确定"走到"我知道下一步做什么"，且每一条结论都可以点到原文对应位置。
 
+## 二·五 信任边界
+
+**信任边界 = `src/proofpath/verifier.py` 的 `verify_report`**。这是本项目所有其他决策的基石，也是 §三 M-04 / M-05 / M-06 三条必须项的共同来源、§四 演示第三件事（"系统遇到错误时如何处理"）的实现机制。
+
+- **模型输出默认不被信任**：无论用哪个模型（当前 Claude、P06 后 DeepSeek，见 [`docs/decisions.md`](decisions.md) D-012 与 [`docs/model-verification.md`](model-verification.md)），`reasoner.py` 返回的每一条引用初始状态都是 `NOT_FOUND` / `coverage=0.0`。
+- **每一条 MET / UNMET 结论**都必须由 `verify_report` 重新在原文里逐字定位；任一条引用无法定位（`NOT_FOUND` / `TOO_SHORT` / `BAD_PAGE`）就把**整条结论**降级为 `UNKNOWN`，rationale 追加"证据核验未通过"。
+- 换模型、加缓存、上前端、接浏览器执行——**都不允许放松这条规则**。任何"因为模型很强所以可以少验证"的改动都属范围外，必须走 0 号文件 §十五 变更记录。
+- 引 `docs/decisions.md` D-012 §四 与 [五人分工清单](../00-项目文档/01-五人分工与任务清单.md) C-12："`verify_report` 仍是唯一信任边界，不因换模型放松"。
+
+这是 ProofPath 对用户唯一的硬承诺：**你看到的每一条'已核验'结论，一定是逐字对得上原文的**。
+
 ## 三 首版功能边界（对齐 0 号文件 §3.3）
 
 ### 3.1 必须项（First Release Must-Have）

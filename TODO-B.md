@@ -58,11 +58,12 @@
 
 | 交付物 | 状态 | 位置 |
 |---|---|---|
-| `docs/research.md` | 已交付 v1（含未取得项标注） | `docs/research.md` |
-| `docs/product.md` | 已交付 v1 | `docs/product.md` |
-| `docs/acceptance-set.md` | 已交付 v1（24 例 + T01–T12 映射） | `docs/acceptance-set.md` |
-| `docs/demo.md` | 已交付 v1（脚本 + 回退 + 排练检查） | `docs/demo.md` |
-| `docs/attribution.md` | 已交付 v1（含实测记录） | `docs/attribution.md` |
+| `docs/research.md` | 已交付 v1.1（含未取得项标注 + Claude→DeepSeek 迁移 + 信任边界） | `docs/research.md` |
+| `docs/product.md` | 已交付 v1.1（新增 §二·五 信任边界） | `docs/product.md` |
+| `docs/acceptance-set.md` | 已交付 v1.1（24 例 + T01–T12 映射；AC-15 覆盖迁移前后两种 API key） | `docs/acceptance-set.md` |
+| `docs/demo.md` | 已交付 v1.1（脚本明命信任边界；Q&A 补 DeepSeek 迁移） | `docs/demo.md` |
+| `docs/attribution.md` | 已交付 v1.1（补 openai、DeepSeek 迁移、信任边界不变） | `docs/attribution.md` |
 | 交付前 pytest | ✅ 132 项通过 · 覆盖率 90% · 与 baseline 一致 | `docs/attribution.md §三` |
+| 稳路径 fix-up（与 main 同步 + 信任边界） | ✅ 已提交（v1.1） | 本表上方 5 行 |
 | 备份录屏 | 待 yang660op 本人补 | — |
 | 路演排练记录 | 待 yang660op 本人补 | — |
