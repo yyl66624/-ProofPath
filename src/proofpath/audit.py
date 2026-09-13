@@ -19,6 +19,34 @@ from typing import Any, Iterator
 from .errors import AuditChainBrokenError
 
 GENESIS_HASH = "0" * 64
+_SENSITIVE_KEYS = ("api_key", "token", "password", "secret", "authorization", "credential", "private_key")
+
+
+def _is_sensitive_key(key: Any) -> bool:
+    if not isinstance(key, str):
+        return False
+    compact = key.lower().replace("-", "").replace("_", "")
+    return any(marker.replace("_", "") in compact for marker in _SENSITIVE_KEYS)
+
+
+def _redact_sensitive(value: Any) -> Any:
+    """Remove credential fields before an entry is hashed or persisted.
+
+    This protects structured audit payloads; callers must still avoid putting
+    secrets in free-text fields such as error messages.
+    """
+    if isinstance(value, dict):
+        return {
+            key: (
+                "[REDACTED]"
+                if _is_sensitive_key(key)
+                else _redact_sensitive(item)
+            )
+            for key, item in value.items()
+        }
+    if isinstance(value, (list, tuple)):
+        return [_redact_sensitive(item) for item in value]
+    return value
 
 
 def _canonical(payload: dict[str, Any]) -> str:
@@ -111,7 +139,7 @@ class AuditLog:
             index=index,
             timestamp=datetime.now(timezone.utc).isoformat(),
             event=event,
-            payload=payload,
+            payload=_redact_sensitive(payload),
             prev_hash=self.head_hash,
             entry_hash="",
         )
