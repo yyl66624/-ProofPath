@@ -12,7 +12,7 @@
 #   - 前端 Vite  : http://127.0.0.1:5173  (改 vite.config.ts)
 #   - 前端已配 proxy：/api/* → 127.0.0.1:8000
 
-set -euo pipefail
+set -eo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
@@ -104,19 +104,19 @@ log "按 Ctrl-C 停止两端。"
 cleanup() {
   echo
   log "正在关闭…"
-  [ -n "$BACKEND_PID" ]  && kill "$BACKEND_PID"  2>/dev/null || true
-  [ -n "$FRONTEND_PID" ] && kill "$FRONTEND_PID" 2>/dev/null || true
+  if [ -n "${BACKEND_PID:-}" ];  then kill "$BACKEND_PID"  2>/dev/null || true; fi
+  if [ -n "${FRONTEND_PID:-}" ]; then kill "$FRONTEND_PID" 2>/dev/null || true; fi
   exit 0
 }
 trap cleanup INT TERM
 
 # 阻塞直到任一进程退出
 while true; do
-  if [ -n "$BACKEND_PID" ]  && ! kill -0 "$BACKEND_PID"  2>/dev/null; then
+  if [ -n "${BACKEND_PID:-}" ]  && ! kill -0 "$BACKEND_PID"  2>/dev/null; then
     err "后端进程已退出，查看日志：tail -50 /tmp/proofpath-backend.log"
     cleanup
   fi
-  if [ -n "$FRONTEND_PID" ] && ! kill -0 "$FRONTEND_PID" 2>/dev/null; then
+  if [ -n "${FRONTEND_PID:-}" ] && ! kill -0 "$FRONTEND_PID" 2>/dev/null; then
     err "前端进程已退出，查看日志：tail -50 /tmp/proofpath-frontend.log"
     cleanup
   fi
