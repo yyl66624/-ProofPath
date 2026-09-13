@@ -121,6 +121,22 @@ ProofPath 0.1.0
   [可用    ] anthropic (模型调用)
 ```
 
+### 2.7 新增依赖验证（同日追加，对应 D-009、D-012）
+
+在**另一个全新的独立 venv**中执行 `python -m pip install -e ".[dev,server]"`，验证新增依赖从零可安装、且不影响既有测试：
+
+```
+$ python -m pip check
+No broken requirements found.
+
+$ python -m pytest -q
+132 passed in 30.64s
+```
+
+新增依赖版本：fastapi 0.141.1、uvicorn 0.52.4、python-multipart 0.0.32、openai 3.13.0。DeepSeek 入口接线另用无效密钥实测：`https://api.deepseek.com/models` 与 `/chat/completions` 均返回 `401 AuthenticationError`（OpenAI 风格错误体），证明 base_url 与 SDK 接线正确。
+
+**仍未验证**：真实模型调用（无有效密钥）、Linux 与 Python 3.11（由 CI 覆盖）。
+
 ---
 
 ## 三 与既有基线的比对

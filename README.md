@@ -53,16 +53,23 @@ proofpath demo
 | `proofpath doctor` | 检查可选组件安装情况 | 否 |
 | `proofpath check <文件> -q <问题>` | 真实判定资格 | **是** |
 
-真实调用需要凭证：
+真实调用需要凭证。**模型已确定为 DeepSeek**（`deepseek-flash` 为默认，难例升级 `deepseek-v4-pro`），
+配置方式只写变量名、不写密钥值，见 [凭证配置与分发](docs/credentials.md)：
 
 ```bash
-export ANTHROPIC_API_KEY=sk-ant-...   # 或安装 ant CLI 后执行 ant auth login
+cp .env.example .env      # 填入 DEEPSEEK_API_KEY，其余保持默认
 
 proofpath check examples/policy.txt \
   -q "我硕士毕业28岁，社保交了8个月，能申请多少？" \
   -p 学历=硕士 -p 年龄=28 \
   --audit run.jsonl
 ```
+
+> 过渡状态：切换 DeepSeek 的实现属于 P06，尚未落地；当前 `check` 仍走 Anthropic SDK，
+> 因此过渡期还要设置 `ANTHROPIC_API_KEY`。切换完成后该依赖与配置项一并删除，
+> 见 [决策记录](docs/decisions.md) D-012。
+
+绝不把密钥写进仓库、issue、群聊或演示截图；`.env` 已被 `.gitignore` 忽略。
 
 ## 执行安全
 
