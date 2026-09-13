@@ -1,2 +1,10 @@
+# 必需的 pnpm 工作区根声明。`packages: []` 表明本目录没有子包
+# （前端是单包项目），但 pnpm v9+ 仍要求这个字段存在，否则
+# 'pnpm install --frozen-lockfile' 报 'packages field missing or empty'。
+packages: []
+
+# 允许指定依赖运行其 postinstall 构建脚本。这里只放开 esbuild
+# （它会下载对应平台的 native binary），其他依赖的 postinstall
+# 仍被 .npmrc 的 ignore-scripts=true 全局忽略。
 allowBuilds:
   esbuild: true
