@@ -112,7 +112,7 @@ class ConditionVerdict:
         return replace(
             self,
             status=ConditionStatus.UNKNOWN,
-            rationale=f"{self.rationale}\n[证据核验未通过] {reason}",
+            rationale=f"证据核验未通过：{reason}",
         )
 
 

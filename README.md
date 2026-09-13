@@ -33,7 +33,7 @@
 
 ```bash
 uv venv --python 3.12
-uv pip install -e ".[dev]"
+uv pip install -e ".[dev,server]"
 
 # 离线跑通完整链路，不需要任何凭证
 proofpath demo
@@ -59,7 +59,7 @@ proofpath demo
 配置方式只写变量名、不写密钥值，见 [凭证配置与分发](docs/credentials.md)：
 
 ```bash
-cp .env.example .env      # 填入 DEEPSEEK_API_KEY，其余保持默认
+# 先按 docs/credentials.md 把 DEEPSEEK_API_KEY 导出到当前进程环境
 
 proofpath check examples/policy.txt \
   -q "我硕士毕业28岁，社保交了8个月，能申请多少？" \
@@ -67,11 +67,22 @@ proofpath check examples/policy.txt \
   --audit run.jsonl
 ```
 
-> 过渡状态：切换 DeepSeek 的实现属于 P06，尚未落地；当前 `check` 仍走 Anthropic SDK，
-> 因此过渡期还要设置 `ANTHROPIC_API_KEY`。切换完成后该依赖与配置项一并删除，
-> 见 [决策记录](docs/decisions.md) D-012。
+`check` 通过 OpenAI 兼容 SDK 调用 DeepSeek；默认关闭思考并使用
+`deepseek-flash`，有限重试的最后一次会升级到 `deepseek-v4-pro`。实现依据见
+[决策记录](docs/decisions.md) D-012。
 
 绝不把密钥写进仓库、issue、群聊或演示截图；`.env` 已被 `.gitignore` 忽略。
+
+## 本地 HTTP 服务
+
+```bash
+uv pip install -e ".[dev,server]"
+uvicorn proofpath.api:app --host 127.0.0.1 --port 8000
+```
+
+接口统一位于 `/api/v1`，完整字段、状态与错误约定见
+[API 契约](docs/api-contract.md)。首版文档、任务和幂等键只保存在当前进程内，重启后不会保留；
+服务没有账号与租户隔离，只允许绑定本机回环地址或用于等价的单用户隔离环境。
 
 ## 执行安全
 
@@ -97,7 +108,7 @@ proofpath check examples/policy.txt \
 
 ## 可选组件
 
-主依赖只需 `anthropic` 和 `pypdf`，装完即可跑。两个重量级能力按需安装：
+主依赖只需 `openai` 和 `pypdf`，装完即可跑。两个重量级能力按需安装：
 
 ```bash
 uv pip install -e ".[docling]"   # DOCX/PPTX/图片/表格/OCR
@@ -114,8 +125,7 @@ playwright install chromium      # browser 额外需要
 .venv/bin/python -m pytest --cov
 ```
 
-132 个测试，覆盖率 90%。`verifier.py`（信任边界）、`actions.py`（执行闸门）、
-`models.py`、`retrieval.py`、`text.py` 均为 98–100%。
+测试覆盖解析、检索、模型失败、核验信任边界、服务编排、HTTP 状态机和执行闸门。
 
 ## 项目结构
 
@@ -125,7 +135,9 @@ src/proofpath/
   models.py      不可变领域类型
   parsers.py     文档 → 带页码的片段（pypdf / docling）
   retrieval.py   BM25 检索，零外部依赖
-  reasoner.py    Claude 调用（结构化输出 + 提示缓存 + 拒答兜底）
+  reasoner.py    DeepSeek 调用（JSON 本地校验 + 有限重试 + 模型回退）
+  service.py     分析编排（文档一致性 + 引用核验）
+  api.py         FastAPI 接口与进程内任务状态
   verifier.py    引用核验 —— 信任边界
   actions.py     风险分级与确认闸门
   audit.py       哈希链审计日志

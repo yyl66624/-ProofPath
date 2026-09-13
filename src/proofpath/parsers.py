@@ -96,9 +96,11 @@ def _load_pdf_pypdf(path: Path, payload: bytes) -> Document:
 
 def _load_plaintext(path: Path, payload: bytes) -> Document:
     try:
-        raw = payload.decode("utf-8")
-    except UnicodeDecodeError:
-        raw = payload.decode("utf-8", errors="replace")
+        raw = payload.decode("utf-8-sig")
+    except UnicodeDecodeError as exc:
+        raise DocumentLoadError(
+            f"{path.name}: text is not valid UTF-8"
+        ) from exc
 
     # Let fixtures and pasted notices declare page boundaries explicitly.
     pages = _PAGE_BREAK.split(raw) if _PAGE_BREAK.search(raw) else [raw]
