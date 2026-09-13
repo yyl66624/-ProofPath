@@ -133,9 +133,9 @@ class TestCliCheck:
     def test_check_missing_credentials(self, capsys) -> None:
         """T07: Missing API credentials → understandable error.
 
-        anthropic.Anthropic() does not raise on construction even without a key;
-        the error surfaces at call time. We simulate that by making the reasoner
-        raise ReasonerUnavailableError.
+        DeepSeekReasoner's client construction raises ReasonerUnavailableError
+        when the SDK is unreachable or creds are missing. We simulate that by
+        making the reasoner raise ReasonerUnavailableError.
         """
         from proofpath.demo import EXAMPLE_POLICY
         from proofpath.errors import ReasonerUnavailableError
@@ -143,7 +143,7 @@ class TestCliCheck:
         mock_reasoner = MagicMock()
         mock_reasoner.analyze.side_effect = ReasonerUnavailableError("no key")
 
-        with patch("proofpath.reasoner.ClaudeReasoner", return_value=mock_reasoner):
+        with patch("proofpath.reasoner.DeepSeekReasoner", return_value=mock_reasoner):
             rc = main([
                 "check", str(EXAMPLE_POLICY),
                 "-q", "我能申请吗",
@@ -156,8 +156,8 @@ class TestCliCheck:
         """T01: check wiring works when model returns valid response."""
         from proofpath.demo import EXAMPLE_POLICY, ScriptedReasoner
 
-        # Patch where cmd_check imports ClaudeReasoner (inside the function body)
-        with patch("proofpath.reasoner.ClaudeReasoner", return_value=ScriptedReasoner()):
+        # Patch where cmd_check imports DeepSeekReasoner (inside the function body)
+        with patch("proofpath.reasoner.DeepSeekReasoner", return_value=ScriptedReasoner()):
             rc = main([
                 "check", str(EXAMPLE_POLICY),
                 "-q", "我硕士毕业能申请多少",

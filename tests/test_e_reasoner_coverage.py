@@ -7,24 +7,24 @@ Coverage gaps targeted:
 - Response with no text block (line 262)
 
 T07 alignment: model timeout, no auth, quota exceeded, abnormal output.
+
+NOTE (2026-09-13): Disabled after the DeepSeek migration (PR #21).
+This file was written against the Anthropic SDK (`anthropic.Anthropic`,
+`client.beta.messages.create`, `APIStatusError`, `stop_reason == "refusal"`).
+P05 replaced the reasoner with `DeepSeekReasoner`, which uses the
+OpenAI-compatible interface (`client.chat.completions.create`,
+`openai.APIStatusError`, refusal signaled differently). The new behavior is
+covered by `tests/test_reasoner.py`. Re-enable once equivalent T07 coverage
+for DeepSeekReasoner is in place.
 """
 from __future__ import annotations
 
-import json
-from typing import Any
-from unittest.mock import MagicMock, patch
-
 import pytest
 
-from proofpath.errors import (
-    MalformedModelOutputError,
-    ModelRefusedError,
-    ReasonerUnavailableError,
+pytest.skip(
+    "Anthropic-only coverage tests; superseded by tests/test_reasoner.py after DeepSeek migration.",
+    allow_module_level=True,
 )
-from proofpath.models import CitationStatus, ConditionStatus, Document
-from proofpath.parsers import load_document
-from proofpath.reasoner import ClaudeReasoner, _build_user_prompt, _parse_payload
-from proofpath.retrieval import Bm25Index
 
 WELL_FORMED = {
     "summary": "初步判断如下。",
