@@ -22,6 +22,14 @@ class ReasonerUnavailableError(ProofPathError):
     """The model-backed reasoner cannot run (missing credentials, etc.)."""
 
 
+class ModelTimeoutError(ReasonerUnavailableError):
+    """The model provider did not answer within the configured timeout."""
+
+
+class ModelRateLimitedError(ReasonerUnavailableError):
+    """The model provider rejected the request because of quota or rate limits."""
+
+
 class ModelRefusedError(ProofPathError):
     """The model declined the request (stop_reason == 'refusal')."""
 
@@ -33,6 +41,26 @@ class ModelRefusedError(ProofPathError):
 
 class MalformedModelOutputError(ProofPathError):
     """The model returned content that did not satisfy the output schema."""
+
+
+class ModelOutputTruncatedError(MalformedModelOutputError):
+    """The model exhausted its output budget before producing response content."""
+
+
+class AnalysisCancelledError(ProofPathError):
+    """An analysis was cancelled before another provider attempt could start."""
+
+
+class ReportDocumentMismatchError(ProofPathError):
+    """A reasoner returned a report for a different source document."""
+
+    def __init__(self, expected_doc_id: str, actual_doc_id: str) -> None:
+        self.expected_doc_id = expected_doc_id
+        self.actual_doc_id = actual_doc_id
+        super().__init__(
+            "analysis report document does not match the requested document "
+            f"(expected={expected_doc_id!r}, actual={actual_doc_id!r})"
+        )
 
 
 class ConfirmationRequiredError(ProofPathError):

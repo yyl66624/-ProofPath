@@ -26,7 +26,6 @@
 | `PROOFPATH_HOST` / `PROOFPATH_PORT` | 否 | `127.0.0.1` / `8000` | 后端监听地址（P06 生效） |
 | `PROOFPATH_MAX_UPLOAD_BYTES` | 否 | 20 MiB | 上传大小上限 |
 | `PROOFPATH_ANALYZE_TIMEOUT_SECONDS` | 否 | 120 | 单次分析超时 |
-| `ANTHROPIC_API_KEY` | 否 | 无 | 过渡期专用，P06 合并后删除 |
 
 `PROOFPATH_*` 一组由 A 与 C 在 P05 契约评审中共同确认；如需改动，按 D-011 的变更流程记录一次。
 
@@ -34,10 +33,10 @@
 
 ## 三 本机配置步骤
 
-1. 复制样例文件：把 `.env.example` 复制为 `.env`（同一目录，仓库根）。
-2. 在 `.env` 中只填 `DEEPSEEK_API_KEY` 的值，其余保持默认。
-3. 确认 `.env` 没有被 git 跟踪：`git status --short` 中**不应**出现 `.env`；出现即说明 `.gitignore` 被破坏，立刻停止并通知 A。
-4. Windows PowerShell 若希望用系统环境变量而不是 `.env`：
+1. 直接运行 CLI 或 Uvicorn 时，把密钥导出到当前进程环境；Python 进程不会自动读取 `.env`。
+2. 使用 Docker Compose 时，可把 `.env.example` 复制为 `.env` 并只填 `DEEPSEEK_API_KEY`；其余保持默认。
+3. 若使用 `.env`，确认它没有被 git 跟踪：`git status --short` 中**不应**出现 `.env`；出现即说明 `.gitignore` 被破坏，立刻停止并通知 A。
+4. Windows PowerShell 设置当前窗口环境变量：
 
 ```powershell
 $env:DEEPSEEK_API_KEY = "<你的密钥>"   # 仅当前窗口有效

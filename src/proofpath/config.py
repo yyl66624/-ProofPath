@@ -2,13 +2,17 @@
 from __future__ import annotations
 
 # --- Model -------------------------------------------------------------------
-MODEL: str = "claude-opus-5"
-MAX_TOKENS: int = 16_000
-EFFORT: str = "high"
+MODEL: str = "deepseek-flash"
+FALLBACK_MODEL: str = "deepseek-v4-pro"
+DEEPSEEK_BASE_URL: str = "https://api.deepseek.com"
+MAX_TOKENS: int = 3_000
+MIN_MODEL_TOKENS: int = 2_000
+MODEL_MAX_RETRIES: int = 2
+MODEL_TIMEOUT_SECONDS: float = 120.0
 
-# Server-side refusal fallback: on a policy decline the API retries the same
-# request on a suitable fallback model inside the same call.
-FALLBACK_BETA: str = "server-side-fallback-2026-07-01"
+# --- HTTP service ------------------------------------------------------------
+MAX_UPLOAD_BYTES: int = 20 * 1024 * 1024
+ANALYZE_TIMEOUT_SECONDS: float = 120.0
 
 # --- Evidence verification ---------------------------------------------------
 # A quote shorter than this (after normalization) is not distinctive enough to

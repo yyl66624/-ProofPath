@@ -8,8 +8,6 @@ version = "0.1.0"
 description = "Evidence-grounded assistant for navigating policy documents and filing applications"
 requires-python = ">=3.11"
 dependencies = [
-    # 过渡期保留：P06 把模型调用切到 DeepSeek 后移除 anthropic（见 docs/decisions.md D-012）
-    "anthropic==1.4.0",
     "pypdf==6.18.0",
     # DeepSeek 走 OpenAI 兼容格式，用官方 openai SDK（见 D-012）
     "openai==3.13.0",

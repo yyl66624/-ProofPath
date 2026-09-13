@@ -7,6 +7,7 @@ live model. Only `check` calls the API.
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from pathlib import Path
 from typing import Any, Sequence
@@ -22,6 +23,7 @@ from .errors import (
 from .parsers import docling_available, load_document
 from .render import render_report
 from .retrieval import Bm25Index
+from .service import analyze_document
 from .text import collapse_for_display
 from .verifier import verify_report
 
@@ -88,23 +90,32 @@ def cmd_search(args: argparse.Namespace) -> int:
 
 
 def cmd_check(args: argparse.Namespace) -> int:
-    from .reasoner import ClaudeReasoner
+    from .reasoner import DeepSeekReasoner
 
     document = _load(args.file)
-    index = Bm25Index.from_document(document)
     audit = AuditLog(path=Path(args.audit)) if args.audit else None
     if audit is not None:
         audit.append("document_parsed", doc_id=document.doc_id, parser=document.parser)
 
-    reasoner = ClaudeReasoner(model=args.model)
-    report = reasoner.analyze(
+    reasoner = DeepSeekReasoner(model=args.model)
+    outcome = analyze_document(
         args.question,
         document,
-        index,
+        reasoner,
         profile=_parse_profile(args.profile),
         top_k=args.top_k,
     )
-    return _report_and_render(report, document, audit)
+    if audit is not None:
+        audit.append(
+            "report_verified",
+            doc_id=document.doc_id,
+            counts=outcome.report.counts(),
+            citations=outcome.verification.total_citations,
+            rejected=outcome.verification.rejected,
+            downgraded=outcome.verification.downgraded_conditions,
+        )
+    print(render_report(outcome.report, outcome.verification))
+    return _EXIT_OK
 
 
 def cmd_demo(args: argparse.Namespace) -> int:
@@ -164,13 +175,14 @@ def cmd_doctor(_: argparse.Namespace) -> int:
     from importlib.util import find_spec
 
     print(f"ProofPath {__version__}")
-    print(f"默认模型: {config.MODEL}")
+    print(f"默认模型: {os.environ.get('DEEPSEEK_MODEL') or config.MODEL}")
     checks = (
         ("pypdf (PDF 解析)", find_spec("pypdf") is not None, "必需,已随主依赖安装"),
         ("docling (DOCX/图片/OCR)", docling_available(), "uv pip install -e '.[docling]'"),
         ("browser-use (表单自动填写)", find_spec("browser_use") is not None,
          "uv pip install -e '.[browser]' && playwright install chromium"),
-        ("anthropic (模型调用)", find_spec("anthropic") is not None, "必需,已随主依赖安装"),
+        ("openai (DeepSeek 模型调用)", find_spec("openai") is not None,
+         "必需,已随主依赖安装"),
     )
     for name, available, hint in checks:
         status = "可用" if available else "未安装"
@@ -202,7 +214,11 @@ def build_parser() -> argparse.ArgumentParser:
     p_check.add_argument("-q", "--question", required=True)
     p_check.add_argument("-p", "--profile", action="append", metavar="KEY=VALUE")
     p_check.add_argument("-k", "--top-k", type=int, default=config.DEFAULT_TOP_K)
-    p_check.add_argument("--model", default=config.MODEL)
+    p_check.add_argument(
+        "--model",
+        default=None,
+        help="覆盖 DEEPSEEK_MODEL；未设置时使用 deepseek-flash",
+    )
     p_check.add_argument("--audit", metavar="PATH", help="写入审计链文件")
     p_check.set_defaults(func=cmd_check)
 

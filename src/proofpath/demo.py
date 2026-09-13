@@ -126,7 +126,7 @@ def scripted_report(document: Document) -> EligibilityReport:
 
 
 class ScriptedReasoner:
-    """Drop-in stand-in for ClaudeReasoner in demos and tests."""
+    """Drop-in stand-in for the live model reasoner in demos and tests."""
 
     def analyze(self, question: str, document: Document, index: object, **_: object):
         report = scripted_report(document)

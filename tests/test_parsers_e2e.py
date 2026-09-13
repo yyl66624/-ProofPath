@@ -3,10 +3,17 @@ from __future__ import annotations
 
 import pytest
 
-from proofpath.cli import main
+from proofpath.cli import build_parser, main
 from proofpath.demo import DEMO_QUESTION, EXAMPLE_POLICY, ScriptedReasoner
 from proofpath.errors import DocumentLoadError, NoParserAvailableError
-from proofpath.models import CitationStatus, ConditionStatus
+from proofpath.models import (
+    Citation,
+    CitationStatus,
+    ConditionStatus,
+    ConditionVerdict,
+    EligibilityReport,
+    VerifiedCitation,
+)
 from proofpath.parsers import load_document
 from proofpath.render import render_report
 from proofpath.retrieval import Bm25Index
@@ -66,6 +73,12 @@ class TestLoadDocument:
         path = tmp_path / "blank.txt"
         path.write_text("   \n\n  ", encoding="utf-8")
         with pytest.raises(DocumentLoadError, match="no extractable text"):
+            load_document(path)
+
+    def test_invalid_utf8_text_is_rejected_as_damaged(self, tmp_path) -> None:
+        path = tmp_path / "damaged.txt"
+        path.write_bytes(b"policy\xff\xfecontent")
+        with pytest.raises(DocumentLoadError, match="UTF-8"):
             load_document(path)
 
     def test_unsupported_type(self, tmp_path) -> None:
@@ -165,7 +178,65 @@ class TestCli:
 
     def test_doctor_command(self, capsys) -> None:
         assert main(["doctor"]) == 0
-        assert "claude-opus-5" in capsys.readouterr().out
+        output = capsys.readouterr().out
+        assert "deepseek-flash" in output
+        assert "openai (DeepSeek 模型调用)" in output
+        assert "anthropic" not in output.lower()
+
+    def test_check_model_default_is_resolved_from_environment(self) -> None:
+        args = build_parser().parse_args(
+            ["check", str(EXAMPLE_POLICY), "-q", "年龄条件"]
+        )
+        assert args.model is None
+
+    def test_doctor_reports_environment_model(self, monkeypatch, capsys) -> None:
+        monkeypatch.setenv("DEEPSEEK_MODEL", "deepseek-v4-pro")
+        assert main(["doctor"]) == 0
+        assert "默认模型: deepseek-v4-pro" in capsys.readouterr().out
+
+    def test_check_uses_safe_service_summary_and_hides_model_checklist(
+        self, monkeypatch, capsys
+    ) -> None:
+        import proofpath.reasoner as reasoner_module
+
+        class FakeLiveReasoner:
+            def __init__(self, **_: object) -> None:
+                pass
+
+            def analyze(self, question, document, index, *, profile=None, top_k=6):
+                return EligibilityReport(
+                    doc_id=document.doc_id,
+                    question=question,
+                    verdicts=(
+                        ConditionVerdict(
+                            condition="学历要求",
+                            status=ConditionStatus.MET,
+                            rationale="模型理由",
+                            citations=(
+                                VerifiedCitation(
+                                    citation=Citation(
+                                        page=1,
+                                        quote="具有全日制本科及以上学历",
+                                    ),
+                                    status=CitationStatus.NOT_FOUND,
+                                    coverage=0.0,
+                                ),
+                            ),
+                        ),
+                    ),
+                    checklist=("模型材料",),
+                    summary="模型保证一定符合",
+                )
+
+        monkeypatch.setattr(reasoner_module, "DeepSeekReasoner", FakeLiveReasoner)
+
+        assert main(
+            ["check", str(EXAMPLE_POLICY), "-q", "硕士学历要求"]
+        ) == 0
+        output = capsys.readouterr().out
+        assert output.startswith("证据核验结果：")
+        assert "模型保证一定符合" not in output
+        assert "模型材料" not in output
 
     def test_audit_roundtrip_via_cli(self, tmp_path, capsys) -> None:
         audit_path = tmp_path / "run.jsonl"

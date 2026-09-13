@@ -134,6 +134,10 @@ class TestVerifyReport:
         )
         verified, _ = verify_report(report, document)
         assert verified.verdicts[0].status is ConditionStatus.UNKNOWN
+        assert "凭印象" not in verified.verdicts[0].rationale
+        assert verified.verdicts[0].rationale == (
+            "证据核验未通过：该结论没有提供任何原文引用。"
+        )
 
     def test_any_unverifiable_citation_sinks_the_verdict(self, document: Document) -> None:
         """A compound claim must not pass on the strength of its true half.
