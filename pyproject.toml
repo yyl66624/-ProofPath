@@ -1,0 +1,45 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "proofpath"
+version = "0.1.0"
+description = "Evidence-grounded assistant for navigating policy documents and filing applications"
+requires-python = ">=3.11"
+dependencies = [
+    # 过渡期保留：P06 把模型调用切到 DeepSeek 后移除 anthropic（见 docs/decisions.md D-012）
+    "anthropic==1.4.0",
+    "pypdf==6.18.0",
+    # DeepSeek 走 OpenAI 兼容格式，用官方 openai SDK（见 D-012）
+    "openai==3.13.0",
+]
+
+[project.optional-dependencies]
+# 后端服务（P06）。安装：pip install -e ".[dev,server]"
+# 与现有依赖在独立 venv 实测共存，pip check 无冲突（2026年9月13日）。
+server = [
+    "fastapi==0.141.1",
+    "uvicorn[standard]==0.52.4",
+    "python-multipart==0.0.32",
+]
+# Richer document parsing (PDF/DOCX/PPTX/tables/OCR). Heavy (pulls torch).
+#   uv pip install -e ".[docling]"
+docling = ["docling==2.126.0"]
+# Browser automation for form filling. Requires `playwright install chromium`.
+#   uv pip install -e ".[browser]"
+browser = ["browser-use==0.13.10"]
+dev = ["pytest==9.1.1", "pytest-cov==7.1.0"]
+
+[project.scripts]
+proofpath = "proofpath.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/proofpath"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.coverage.run]
+source = ["src/proofpath"]
